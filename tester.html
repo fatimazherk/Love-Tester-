@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Love Tester</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #ff9a9e, #fad0c4);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            font-family: 'Arial', sans-serif;
+        }
+
+        .gif-container {
+            display: flex;
+            justify-content: center;
+            margin-bottom: 1rem;
+        }
+
+        .gif-container img {
+            width: 150px;
+            height: auto;
+            border-radius: 10px;
+        }
+
+        .love-tester-container {
+            max-width: 700px;
+            width: 100%;
+            padding: 3rem;
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+            transform: perspective(1000px) rotateY(10deg);
+            transition: transform 0.5s ease;
+            font-size: 1.2rem;
+        }
+
+        .love-tester-container:hover {
+            transform: perspective(1000px) rotateY(0deg);
+        }
+
+        .input-section {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        input {
+            padding: 1rem;
+            border: 2px solid #ff6b6b;
+            border-radius: 10px;
+            font-size: 1.1rem;
+            outline: none;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus {
+            border-color: #ff4757;
+        }
+
+        button {
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 10px;
+            background: #ff6b6b;
+            color: white;
+            font-size: 1.1rem;
+            cursor: pointer;
+            transition: transform 0.3s ease, background 0.3s ease;
+        }
+
+        button:hover {
+            background: #ff4757;
+            transform: scale(1.05);
+        }
+
+        .compatibility-meter {
+            position: relative;
+            height: 40px;
+            background: #f0f0f0;
+            border-radius: 20px;
+            overflow: hidden;
+            margin: 2rem 0;
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.1);
+        }
+
+        .progress-bar {
+            width: 0%;
+            height: 100%;
+            background: linear-gradient(90deg, #ff7675, #fd9644);
+            transition: width 1s ease;
+            border-radius: 20px;
+        }
+
+        .percentage {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #2d3436;
+        }
+
+        .detailed-analysis {
+            display: grid;
+            gap: 1rem;
+            margin-top: 2rem;
+        }
+
+        .factor .bar {
+            height: 10px;
+            background: rgba(255, 107, 107, 0.3);
+            border-radius: 5px;
+            overflow: hidden;
+        }
+
+        .factor .bar::after {
+            content: '';
+            display: block;
+            height: 100%;
+            width: 0%;
+            background: #ff6b6b;
+            transition: width 1s ease;
+        }
+
+        .love-message {
+            margin-top: 2rem;
+            font-size: 1.2rem;
+            text-align: center;
+            min-height: 60px;
+            font-weight: bold;
+            color: #ff4757;
+        }
+
+        .reset-section {
+            display: flex;
+            justify-content: center;
+            margin-top: 2rem;
+        }
+
+        .reset-button {
+            background: #4ecdc4;
+        }
+
+        .reset-button:hover {
+            background: #2ed573;
+        }
+    </style>
+</head>
+<body>
+    <div class="gif-container">
+        <img id="loveGif" src="default.gif" alt="Love Gif">
+    </div>
+
+    <div class="love-tester-container">
+        <div class="input-section">
+            <input type="text" id="name1" placeholder="Your Name" required>
+            <input type="text" id="name2" placeholder="Partner's Name" required>
+            <button onclick="calculateLove()">Test Compatibility</button>
+        </div>
+        
+        <div class="result-section">
+            <div class="compatibility-meter">
+                <div class="progress-bar"></div>
+                <span class="percentage">0%</span>
+            </div>
+            
+            <div class="detailed-analysis">
+                <div class="factor" data-factor="chemistry">
+                    <label>Chemistry <span class="value">0%</span></label>
+                    <div class="bar"></div>
+                </div>
+                <div class="factor" data-factor="communication">
+                    <label>Communication <span class="value">0%</span></label>
+                    <div class="bar"></div>
+                </div>
+                <div class="factor" data-factor="longevity">
+                    <label>Longevity <span class="value">0%</span></label>
+                    <div class="bar"></div>
+                </div>
+            </div>
+            
+            <div class="love-message"></div>
+        </div>
+        
+        <div class="reset-section">
+            <button class="reset-button" onclick="resetTest()">Test Again</button>
+        </div>
+    </div>
+
+    <script>
+        function calculateLove() {
+            const name1 = document.getElementById('name1').value.toLowerCase();
+            const name2 = document.getElementById('name2').value.toLowerCase();
+    
+            if (!name1 || !name2) {
+                alert('Please enter both names!');
+                return;
+            }
+    
+            const factors = {
+                chemistry: calculateChemistry(name1, name2),
+                communication: calculateCommunication(name1, name2),
+                longevity: calculateLongevity(name1, name2)
+            };
+    
+            const totalScore = Math.round(
+                (factors.chemistry * 0.4) + 
+                (factors.communication * 0.3) + 
+                (factors.longevity * 0.3)
+            );
+    
+            animateResults(totalScore, factors);
+        }
+    
+        function calculateChemistry(n1, n2) {
+            const nameSum = (n1 + n2).split('').reduce((acc, char) => acc + char.charCodeAt(0), 0);
+            return (nameSum % 80) + 20;
+        }
+    
+        function calculateCommunication(n1, n2) {
+            const uniqueLetters = new Set([...n1, ...n2]);
+            const matchPercentage = (uniqueLetters.size / 26) * 100;
+            return 100 - matchPercentage;
+        }
+    
+        function calculateLongevity(n1, n2) {
+            const seed = n1.length + n2.length;
+            return Math.abs(Math.sin(seed) * 100);
+        }
+    
+        function animateResults(score, factors) {
+    const progressBar = document.querySelector('.progress-bar');
+    const percentageText = document.querySelector('.percentage');
+
+    let width = 0;
+    const interval = setInterval(() => {
+        if (width >= score) {
+            clearInterval(interval);
+        } else {
+            width++;
+            progressBar.style.width = width + "%";
+            percentageText.textContent = Math.round(width) + "%"; // Rounded result
+        }
+    }, 10);
+
+    document.querySelectorAll('.factor').forEach(factor => {
+        const type = factor.getAttribute('data-factor');
+        const bar = factor.querySelector('.bar');
+        const value = factor.querySelector('.value');
+        bar.style.width = Math.round(factors[type]) + "%"; // Rounded factors
+        value.textContent = Math.round(factors[type]) + "%"; // Rounded factors
+    });
+
+    showLoveMessage(score);
+}
+
+    
+        function showLoveMessage(score) {
+            const messages = [
+                { range: [0, 30], message: "Needs work! 💔", color: "#ff4757", gif: "sad.gif" },
+                { range: [31, 60], message: "Potential spark! 💞", color: "#ffa502", gif: "medium.gif" },
+                { range: [61, 85], message: "Strong connection! 💖", color: "#2ed573", gif: "good.gif" },
+                { range: [86, 100], message: "Soulmates! 💘", color: "#ff6b81", gif: "soulmates.gif" }
+            ];
+    
+            const { message, color, gif } = messages.find(m => score >= m.range[0] && score <= m.range[1]);
+    
+            document.querySelector('.love-message').textContent = message;
+            document.querySelector('.love-message').style.color = color;
+            document.getElementById('loveGif').src = gif;
+        }
+    
+        function resetTest() {
+            document.getElementById('name1').value = "";
+            document.getElementById('name2').value = "";
+            document.querySelector('.progress-bar').style.width = "0%";
+            document.querySelector('.percentage').textContent = "0%";
+            document.querySelector('.love-message').textContent = "";
+            document.getElementById('loveGif').src = "default.gif";
+    
+            document.querySelectorAll('.factor .bar').forEach(bar => bar.style.width = "0%");
+            document.querySelectorAll('.factor .value').forEach(value => value.textContent = "0%");
+        }
+    </script>
+    
+</body>
+</html>
